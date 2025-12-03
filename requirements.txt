@@ -2,5 +2,4 @@ fastapi
 uvicorn[standard]
 requests
 groq
-anthropic
 python-dotenv
