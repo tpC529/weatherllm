@@ -12,7 +12,6 @@ load_dotenv()
 # Get API keys from environment variables
 ACCUWEATHER_API_KEY = os.getenv("ACCUWEATHER_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 # Validate required environment variables
 if not ACCUWEATHER_API_KEY:
@@ -515,4 +514,5 @@ async def health_check():
         "status": "healthy",
         "llm_provider": llm_provider,
         "accuweather_configured": bool(ACCUWEATHER_API_KEY)
+
     }
