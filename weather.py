@@ -57,7 +57,7 @@ def get_location_key(zip_code: str) -> str:
     """Convert ZIP code to AccuWeather location key"""
     try:
         res = requests.get(
-            "http://dataservice.accuweather.com/locations/v1/postalcodes/search",
+            "https://dataservice.accuweather.com/locations/v1/postalcodes/search",
             params={"apikey": ACCUWEATHER_API_KEY, "q": zip_code}
         )
         if res.status_code != 200:
@@ -73,7 +73,7 @@ def get_weather(location_key: str) -> str:
     """Get current weather conditions from AccuWeather"""
     try:
         res = requests.get(
-            f"http://dataservice.accuweather.com/currentconditions/v1/{location_key}",
+            f"https://dataservice.accuweather.com/currentconditions/v1/{location_key}",
             params={"apikey": ACCUWEATHER_API_KEY, "details": False}
         )
         if res.status_code != 200:
