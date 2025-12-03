@@ -12,26 +12,19 @@ load_dotenv()
 # Get API keys from environment variables
 ACCUWEATHER_API_KEY = os.getenv("ACCUWEATHER_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 # Validate required environment variables
 if not ACCUWEATHER_API_KEY:
     raise ValueError("ACCUWEATHER_API_KEY environment variable is required")
 
-# Determine which LLM provider to use
-llm_provider = None
-if GROQ_API_KEY:
-    llm_provider = "groq"
-    from groq import Groq
-    llm_client = Groq(api_key=GROQ_API_KEY)
-    llm_model = "llama3-8b-8192"
-elif ANTHROPIC_API_KEY:
-    llm_provider = "anthropic"
-    from anthropic import Anthropic
-    llm_client = Anthropic(api_key=ANTHROPIC_API_KEY)
-    llm_model = "claude-3-haiku-20240307"
-else:
-    raise ValueError("Either GROQ_API_KEY or ANTHROPIC_API_KEY environment variable is required")
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY environment variable is required")
+
+# Initialize Groq LLM client
+from groq import Groq
+llm_client = Groq(api_key=GROQ_API_KEY)
+llm_model = "llama3-8b-8192"
+llm_provider = "groq"
 
 # Initialize FastAPI app
 app = FastAPI(title="WeatherLLM", description="Weather chatbot with LLM integration")
@@ -89,7 +82,7 @@ def get_weather(location_key: str) -> str:
         raise HTTPException(status_code=500, detail=f"Error connecting to AccuWeather: {str(e)}")
 
 def get_llm_response(weather_data: str, user_message: str) -> str:
-    """Get response from LLM provider"""
+    """Get response from Groq LLM"""
     forecast_details = {"text": weather_data}
     
     prompt = f"""You are a helpful weather assistant. Use ONLY the JSON data provided below to answer the user.
@@ -102,22 +95,13 @@ User wants to know: "{user_message}"
 Keep your answer under 100 characters, be friendly and conversational."""
 
     try:
-        if llm_provider == "groq":
-            response = llm_client.chat.completions.create(
-                model=llm_model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.0,
-                max_tokens=100
-            )
-            return response.choices[0].message.content
-        elif llm_provider == "anthropic":
-            response = llm_client.messages.create(
-                model=llm_model,
-                max_tokens=100,
-                temperature=0.0,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            return response.content[0].text
+        response = llm_client.chat.completions.create(
+            model=llm_model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            max_tokens=100
+        )
+        return response.choices[0].message.content
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting LLM response: {str(e)}")
 
